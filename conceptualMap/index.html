@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resizable Split Panes</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <div class="top-bar">
+        <span class="app-title">Visual Studio Code</span>
+        <div class="window-controls">
+            <button class="window-control-btn minimize" id="minimize-btn">−</button>
+            <button class="window-control-btn maximize" id="maximize-btn">□</button>
+            <button class="window-control-btn close" id="close-btn">×</button>
+        </div>
+    </div>
+
+    <div class="menu-bar">
+        <div class="menu-bar-content">
+            <span class="menu-section">File</span>
+            <button class="menu-item">File</button>
+            <button class="menu-item">Edit</button>
+            <button class="menu-item">View</button>
+            <button class="menu-item">Tools</button>
+            <button class="menu-item">Help</button>
+            <span class="status-text">Ready</span>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="button-bar">
+            <div class="button-bar-item active" id="explorer-toggle" title="Toggle Explorer">📁</div>
+            <div class="button-bar-item" id="bitools-toggle" title="Toggle Bitools">🔧</div>
+            <div class="button-bar-item" id="ai-support-toggle" title="Toggle AI Support">🤖</div>
+            <div class="button-bar-item active" id="terminal-toggle" title="Toggle Terminal">💻</div>
+        </div>
+
+        <div class="container">
+            <div class="file-explorer" style="flex: 0 0 40%;">
+                <div class="cm-explorer-header">
+                    <span class="cm-explorer-title">EXPLORER</span>
+                    <div class="cm-explorer-actions">
+                        <button class="cm-action-button" id="cm-new-file-btn" title="New File">
+                            <i class="cm-codicon cm-codicon-new-file"></i>
+                        </button>
+                        <button class="cm-action-button" id="cm-new-folder-btn" title="New Folder">
+                            <i class="cm-codicon cm-codicon-new-folder"></i>
+                        </button>
+                        <button class="cm-action-button" id="cm-refresh-btn" title="Refresh">
+                            <i class="cm-codicon cm-codicon-refresh"></i>
+                        </button>
+                        <button class="cm-action-button" id="cm-open-folder-btn" title="Open Folder">
+                            <i class="cm-codicon cm-codicon-folder-opened"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="cm-explorer-content">
+                    <div class="cm-current-path" id="cm-current-path">Loading...</div>
+                    <div class="cm-file-tree" id="cm-file-tree" tabindex="0">
+                        <!-- File tree will be populated here -->
+                    </div>
+                </div>
+            </div>
+
+            <div class="bitools-panel" style="flex: 0 0 40%; display: none;">
+                <div class="bitools-content">
+                    <div class="bitools-title">BITOOLS</div>
+                    <div class="bitools-subtitle">Development tools and utilities</div>
+                </div>
+            </div>
+
+            <div class="ai-support-panel" style="flex: 0 0 40%; display: none;">
+                <div class="ai-support-content">
+                    <div class="ai-support-title">AI SUPPORT</div>
+                    <div class="ai-support-subtitle">AI-powered coding assistance</div>
+                </div>
+            </div>
+
+            <div class="vertical-resizer"></div>
+
+            <div class="right-container">
+                <div class="code-area" style="flex: 1 1 50%;">
+                    <div class="editor-tab-bar">
+                        <div class="editor-tab-actions">
+                            <button class="tab-action-btn" title="New File">+</button>
+                        </div>
+                    </div>
+                    <div class="breadcrumb-bar">
+                        <div class="breadcrumb-content">
+                            <span class="breadcrumb-path" id="breadcrumb-path">Welcome</span>
+                            <span class="breadcrumb-cursor" id="breadcrumb-cursor"></span>
+                        </div>
+                    </div>
+                    <div class="editor-content">
+                        <div id="monaco-editor-container" style="width: 100%; height: 100%;"></div>
+                    </div>
+                </div>
+
+
+                <div class="horizontal-resizer"></div>
+
+                <div class="terminal-output">
+                    <div class="terminal-container">
+                        <div class="terminals-panel">
+                            <div class="terminals-header">
+                                <span class="terminals-title">TERMINALS</span>
+                                <div class="terminals-actions">
+                                    <button class="terminal-action-btn" title="New Terminal">+</button>
+                                </div>
+                            </div>
+                            <div class="terminals-list">
+                                <div class="terminal-item active" data-terminal="powershell">
+                                    <span class="terminal-icon">💻</span>
+                                    <span class="terminal-name">PowerShell</span>
+                                </div>
+                                <div class="terminal-item" data-terminal="bash">
+                                    <span class="terminal-icon">🐧</span>
+                                    <span class="terminal-name">Bash</span>
+                                </div>
+                                <div class="terminal-item" data-terminal="nodejs">
+                                    <span class="terminal-icon">📝</span>
+                                    <span class="terminal-name">Node.js</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="terminal-main-area">
+                            <div class="terminal-tabs-bar">
+                                <div class="terminal-tab active" data-tab="terminal">Terminal</div>
+                                <div class="terminal-tab" data-tab="diagnostics">Diagnostics</div>
+                                <div class="terminal-tab" data-tab="output">Output</div>
+                            </div>
+                            <div class="terminal-tabs-content">
+                                <div class="terminal-tab-panel active" data-tab="terminal">
+                                    <div class="terminal-content">
+                                        <div style="font-size: 24px; font-weight: bold; color: #ffffff; text-align: center; margin-top: 50px;">
+                                            TERMINAL
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="terminal-tab-panel" data-tab="diagnostics">
+                                    <div class="terminal-content">
+                                        <div style="font-size: 24px; font-weight: bold; color: #ffffff; text-align: center; margin-top: 50px;">
+                                            DIAGNOSTICS
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="terminal-tab-panel" data-tab="output">
+                                    <div class="terminal-content">
+                                        <div style="font-size: 24px; font-weight: bold; color: #ffffff; text-align: center; margin-top: 50px;">
+                                            OUTPUT
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="action-bar">
+        <div class="action-bar-content">
+            <button class="action-button">Save</button>
+            <button class="action-button">Export</button>
+            <button class="action-button">Settings</button>
+            <span class="status-text cursor-position">Ln 1, Col 1</span>
+            <span class="status-text selection-info"></span>
+            <span class="status-text status-message"></span>
+            <span class="status-text error-count" style="color: #ff6b6b;">
+                <span style="margin-right: 4px;">❌</span>
+                <span>0</span>
+            </span>
+            <span class="status-text warning-count" style="color: #ffd93d;">
+                <span style="margin-right: 4px;">⚠️</span>
+                <span>0</span>
+            </span>
+        </div>
+    </div>
+
+    <script>
+        class ResizablePanes {
+            constructor() {
+                this.isResizing = false;
+                this.currentResizer = null;
+                this.container = document.querySelector('.container');
+                this.fileExplorer = document.querySelector('.file-explorer');
+                this.bitoolsPanel = document.querySelector('.bitools-panel');
+                this.aiSupportPanel = document.querySelector('.ai-support-panel');
+                this.rightContainer = document.querySelector('.right-container');
+                this.codeArea = document.querySelector('.code-area');
+                this.terminalOutput = document.querySelector('.terminal-output');
+
+                // Load cached dimensions and states
+                this.loadCachedSettings();
+
+                this.initializeResizers();
+            }
+
+            loadCachedSettings() {
+                // Load cached dimensions
+                this.lastExplorerWidth = localStorage.getItem('explorerWidth') || '40%';
+                this.lastCodeAreaHeight = localStorage.getItem('codeAreaHeight') || '50%';
+
+                // Load cached toggle states
+                this.explorerVisible = localStorage.getItem('explorerVisible') !== 'false'; // Default to true
+                this.bitoolsVisible = localStorage.getItem('bitoolsVisible') !== 'false'; // Default to false
+                this.aiSupportVisible = localStorage.getItem('aiSupportVisible') !== 'false'; // Default to false
+                this.terminalVisible = localStorage.getItem('terminalVisible') !== 'false'; // Default to true
+
+                // Apply cached settings
+                this.applyCachedSettings();
+            }
+
+            applyCachedSettings() {
+                // Apply explorer settings
+                if (this.explorerVisible) {
+                    this.fileExplorer.style.display = 'flex';
+                    this.fileExplorer.style.flex = `0 0 ${this.lastExplorerWidth}`;
+                    this.bitoolsPanel.style.display = 'none';
+                    this.aiSupportPanel.style.display = 'none';
+                    document.querySelector('.vertical-resizer').style.display = 'block';
+                    document.querySelector('.right-container').style.marginLeft = '';
+                    document.querySelector('.right-container').style.maxWidth = 'calc(100vw - 254px)';
+                    document.getElementById('explorer-toggle').classList.add('active');
+                    document.getElementById('bitools-toggle').classList.remove('active');
+                    document.getElementById('ai-support-toggle').classList.remove('active');
+                } else if (this.bitoolsVisible) {
+                    this.fileExplorer.style.display = 'none';
+                    this.bitoolsPanel.style.display = 'flex';
+                    this.bitoolsPanel.style.flex = `0 0 ${this.lastExplorerWidth}`;
+                    this.aiSupportPanel.style.display = 'none';
+                    document.querySelector('.vertical-resizer').style.display = 'block';
+                    document.querySelector('.right-container').style.marginLeft = '';
+                    document.querySelector('.right-container').style.maxWidth = 'calc(100vw - 254px)';
+                    document.getElementById('explorer-toggle').classList.remove('active');
+                    document.getElementById('bitools-toggle').classList.add('active');
+                    document.getElementById('ai-support-toggle').classList.remove('active');
+                } else if (this.aiSupportVisible) {
+                    this.fileExplorer.style.display = 'none';
+                    this.bitoolsPanel.style.display = 'none';
+                    this.aiSupportPanel.style.display = 'flex';
+                    this.aiSupportPanel.style.flex = `0 0 ${this.lastExplorerWidth}`;
+                    document.querySelector('.vertical-resizer').style.display = 'block';
+                    document.querySelector('.right-container').style.marginLeft = '';
+                    document.querySelector('.right-container').style.maxWidth = 'calc(100vw - 254px)';
+                    document.getElementById('explorer-toggle').classList.remove('active');
+                    document.getElementById('bitools-toggle').classList.remove('active');
+                    document.getElementById('ai-support-toggle').classList.add('active');
+                } else {
+                    this.fileExplorer.style.display = 'none';
+                    this.bitoolsPanel.style.display = 'none';
+                    this.aiSupportPanel.style.display = 'none';
+                    document.querySelector('.vertical-resizer').style.display = 'none';
+                    document.querySelector('.right-container').style.marginLeft = '0';
+                    document.querySelector('.right-container').style.maxWidth = 'calc(100vw - 48px)';
+                    document.getElementById('explorer-toggle').classList.remove('active');
+                    document.getElementById('bitools-toggle').classList.remove('active');
+                    document.getElementById('ai-support-toggle').classList.remove('active');
+                }
+
+                // Apply terminal settings
+                if (this.terminalVisible) {
+                    this.terminalOutput.style.display = 'flex';
+                    document.querySelector('.horizontal-resizer').style.display = 'block';
+                    this.codeArea.style.flex = `0 0 ${this.lastCodeAreaHeight}`;
+                    // Remove hard-coded min/max height to allow proper resizing
+                    document.getElementById('terminal-toggle').classList.add('active');
+                } else {
+                    this.terminalOutput.style.display = 'none';
+                    document.querySelector('.horizontal-resizer').style.display = 'none';
+                    this.codeArea.style.flex = '1';
+                    document.getElementById('terminal-toggle').classList.remove('active');
+                }
+            }
+
+            saveCachedSettings() {
+                localStorage.setItem('explorerWidth', this.lastExplorerWidth);
+                localStorage.setItem('codeAreaHeight', this.lastCodeAreaHeight);
+                localStorage.setItem('explorerVisible', this.explorerVisible);
+                localStorage.setItem('bitoolsVisible', this.bitoolsVisible);
+                localStorage.setItem('aiSupportVisible', this.aiSupportVisible);
+                localStorage.setItem('terminalVisible', this.terminalVisible);
+            }
+
+            initializeResizers() {
+                // Vertical resizer (left-right)
+                const verticalResizer = document.querySelector('.vertical-resizer');
+                verticalResizer.addEventListener('mousedown', (e) => this.startResize(e, 'vertical'));
+
+                // Horizontal resizer (top-bottom)
+                const horizontalResizer = document.querySelector('.horizontal-resizer');
+                horizontalResizer.addEventListener('mousedown', (e) => this.startResize(e, 'horizontal'));
+
+                // Global mouse events
+                document.addEventListener('mousemove', (e) => this.handleResize(e));
+                document.addEventListener('mouseup', () => this.stopResize());
+
+                // Prevent text selection during resize
+                document.addEventListener('selectstart', (e) => {
+                    if (this.isResizing) e.preventDefault();
+                });
+            }
+
+            startResize(e, direction) {
+                this.isResizing = true;
+                this.currentResizer = direction;
+                this.container.classList.add('resizing');
+
+                this.startX = e.clientX;
+                this.startY = e.clientY;
+
+                if (direction === 'vertical') {
+                    this.startExplorerWidth = this.fileExplorer.offsetWidth;
+                } else {
+                    this.startCodeAreaHeight = this.codeArea.offsetHeight;
+                }
+
+                e.preventDefault();
+            }
+
+            handleResize(e) {
+                if (!this.isResizing) return;
+
+                if (this.currentResizer === 'vertical') {
+                    this.resizeVertical(e);
+                } else if (this.currentResizer === 'horizontal') {
+                    this.resizeHorizontal(e);
+                }
+            }
+
+            resizeVertical(e) {
+                const containerWidth = this.container.offsetWidth;
+                const resizerWidth = 6; // Account for resizer width
+                const deltaX = e.clientX - this.startX;
+                const newExplorerWidth = this.startExplorerWidth + deltaX;
+
+                // Check if trying to resize below minimum width (auto-toggle threshold)
+                const autoToggleThreshold = 150; // Trigger auto-toggle at 150px
+                const minExplorerWidth = 200; // Minimum 200px
+
+                if (newExplorerWidth < autoToggleThreshold) {
+                    // Auto-toggle the side panel when trying to resize below threshold
+                    this.toggleAllSidePanels();
+                    this.stopResize();
+                    return;
+                }
+
+                // Calculate percentage with better constraints (account for resizer)
+                const maxExplorerWidth = containerWidth - resizerWidth - 200; // Leave at least 200px for right
+                const constrainedWidth = Math.max(minExplorerWidth, Math.min(maxExplorerWidth, newExplorerWidth));
+                const explorerPercentage = (constrainedWidth / containerWidth) * 100;
+
+                this.fileExplorer.style.flex = `0 0 ${explorerPercentage}%`;
+                this.bitoolsPanel.style.flex = `0 0 ${explorerPercentage}%`;
+                this.aiSupportPanel.style.flex = `0 0 ${explorerPercentage}%`;
+                this.lastExplorerWidth = `${explorerPercentage}%`;
+                this.saveCachedSettings();
+            }
+
+            resizeHorizontal(e) {
+                const containerHeight = this.rightContainer.offsetHeight;
+                const resizerHeight = 6; // Account for resizer height
+                const deltaY = e.clientY - this.startY;
+                const newCodeAreaHeight = this.startCodeAreaHeight + deltaY;
+
+                // Calculate terminal height from the resize
+                const newTerminalHeight = containerHeight - newCodeAreaHeight - resizerHeight;
+
+                // Check if trying to resize terminal below minimum height (auto-toggle threshold)
+                const autoToggleThreshold = 80; // Trigger auto-toggle at 80px terminal height
+
+                if (newTerminalHeight < autoToggleThreshold && this.terminalVisible) {
+                    // Auto-toggle the terminal when trying to resize below threshold
+                    this.toggleTerminal();
+                    this.stopResize();
+                    return;
+                }
+
+                // Calculate percentage with better constraints (account for resizer)
+                const minCodeAreaHeight = 35; // Just enough for tab bar
+                const maxCodeAreaHeight = containerHeight - resizerHeight - 35; // Leave at least 35px for terminal
+                const constrainedHeight = Math.max(minCodeAreaHeight, Math.min(maxCodeAreaHeight, newCodeAreaHeight));
+                const codeAreaPercentage = (constrainedHeight / containerHeight) * 100;
+
+                // Ensure the resizer always remains visible
+                const terminalPercentage = 100 - codeAreaPercentage;
+                if (terminalPercentage < 5) { // Minimum 5% for terminal to keep resizer visible
+                    this.codeArea.style.flex = `0 0 95%`;
+                    this.lastCodeAreaHeight = '95%';
+                } else {
+                    this.codeArea.style.flex = `0 0 ${codeAreaPercentage}%`;
+                    this.lastCodeAreaHeight = `${codeAreaPercentage}%`;
+                }
+                this.saveCachedSettings();
+            }
+
+            stopResize() {
+                if (this.isResizing) {
+                    this.isResizing = false;
+                    this.currentResizer = null;
+                    this.container.classList.remove('resizing');
+                }
+            }
+
+            toggleAllSidePanels() {
+                // Check if any side panel is currently visible
+                const anySidePanelVisible = this.explorerVisible || this.bitoolsVisible || this.aiSupportVisible;
+
+                if (anySidePanelVisible) {
+                    // Hide all side panels
+                    this.fileExplorer.style.display = 'none';
+                    this.bitoolsPanel.style.display = 'none';
+                    this.aiSupportPanel.style.display = 'none';
+                    document.querySelector('.vertical-resizer').style.display = 'none';
+                    document.querySelector('.right-container').style.marginLeft = '0';
+                    document.querySelector('.right-container').style.maxWidth = 'calc(100vw - 48px)';
+
+                    // Remove active states from all buttons
+                    document.getElementById('explorer-toggle').classList.remove('active');
+                    document.getElementById('bitools-toggle').classList.remove('active');
+                    document.getElementById('ai-support-toggle').classList.remove('active');
+
+                    // Update visibility states
+                    this.explorerVisible = false;
+                    this.bitoolsVisible = false;
+                    this.aiSupportVisible = false;
+                } else {
+                    // Show the last active panel (default to explorer)
+                    const lastActiveButton = localStorage.getItem('lastActivePanel') || 'explorer';
+
+                    if (lastActiveButton === 'bitools') {
+                        this.bitoolsPanel.style.display = 'flex';
+                        this.bitoolsPanel.style.flex = `0 0 ${this.lastExplorerWidth}`;
+                        document.getElementById('bitools-toggle').classList.add('active');
+                        this.bitoolsVisible = true;
+                    } else if (lastActiveButton === 'ai-support') {
+                        this.aiSupportPanel.style.display = 'flex';
+                        this.aiSupportPanel.style.flex = `0 0 ${this.lastExplorerWidth}`;
+                        document.getElementById('ai-support-toggle').classList.add('active');
+                        this.aiSupportVisible = true;
+                    } else {
+                        this.fileExplorer.style.display = 'flex';
+                        this.fileExplorer.style.flex = `0 0 ${this.lastExplorerWidth}`;
+                        document.getElementById('explorer-toggle').classList.add('active');
+                        this.explorerVisible = true;
+                    }
+
+                    // Show resizer and adjust layout
+                    document.querySelector('.vertical-resizer').style.display = 'block';
+                    document.querySelector('.right-container').style.marginLeft = '';
+                    document.querySelector('.right-container').style.maxWidth = 'calc(100vw - 254px)';
+                }
+
+                this.saveCachedSettings();
+            }
+
+            toggleTerminal() {
+                if (this.terminalVisible) {
+                    // Hide terminal
+                    this.terminalOutput.style.display = 'none';
+                    document.querySelector('.horizontal-resizer').style.display = 'none';
+                    this.codeArea.style.flex = '1';
+                    document.getElementById('terminal-toggle').classList.remove('active');
+                    this.terminalVisible = false;
+                } else {
+                    // Show terminal with last known height
+                    this.terminalOutput.style.display = 'flex';
+                    document.querySelector('.horizontal-resizer').style.display = 'block';
+                    this.codeArea.style.flex = `0 0 ${this.lastCodeAreaHeight}`;
+                    document.getElementById('terminal-toggle').classList.add('active');
+                    this.terminalVisible = true;
+                }
+                this.saveCachedSettings();
+            }
+        }
+
+        // Initialize when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            const resizablePanes = new ResizablePanes();
+
+            // Explorer toggle functionality
+            const explorerToggle = document.getElementById('explorer-toggle');
+            const fileExplorer = document.querySelector('.file-explorer');
+            const verticalResizer = document.querySelector('.vertical-resizer');
+            const rightContainer = document.querySelector('.right-container');
+
+            explorerToggle.addEventListener('click', function () {
+                const isVisible = fileExplorer.style.display !== 'none';
+
+                if (isVisible) {
+                    // Hide explorer
+                    fileExplorer.style.display = 'none';
+                    resizablePanes.bitoolsPanel.style.display = 'none';
+                    resizablePanes.aiSupportPanel.style.display = 'none';
+                    verticalResizer.style.display = 'none';
+                    rightContainer.style.marginLeft = '0';
+                    rightContainer.style.maxWidth = 'calc(100vw - 48px)'; // Only account for button bar
+                    this.classList.remove('active');
+                    document.getElementById('bitools-toggle').classList.remove('active');
+                    document.getElementById('ai-support-toggle').classList.remove('active');
+                    resizablePanes.explorerVisible = false;
+                    resizablePanes.bitoolsVisible = false;
+                    resizablePanes.aiSupportVisible = false;
+                } else {
+                    // Show explorer with last known width
+                    fileExplorer.style.display = 'flex';
+                    fileExplorer.style.flex = `0 0 ${resizablePanes.lastExplorerWidth}`;
+                    resizablePanes.bitoolsPanel.style.display = 'none';
+                    resizablePanes.aiSupportPanel.style.display = 'none';
+                    verticalResizer.style.display = 'block';
+                    rightContainer.style.marginLeft = '';
+                    rightContainer.style.maxWidth = 'calc(100vw - 254px)'; // Account for button bar + resizer + min left width
+                    this.classList.add('active');
+                    document.getElementById('bitools-toggle').classList.remove('active');
+                    document.getElementById('ai-support-toggle').classList.remove('active');
+                    resizablePanes.explorerVisible = true;
+                    resizablePanes.bitoolsVisible = false;
+                    resizablePanes.aiSupportVisible = false;
+                    localStorage.setItem('lastActivePanel', 'explorer');
+                }
+                resizablePanes.saveCachedSettings();
+            });
+
+            // Bitools toggle functionality
+            const bitoolsToggle = document.getElementById('bitools-toggle');
+
+            bitoolsToggle.addEventListener('click', function () {
+                const isVisible = resizablePanes.bitoolsPanel.style.display !== 'none';
+
+                if (isVisible) {
+                    // Hide bitools
+                    resizablePanes.bitoolsPanel.style.display = 'none';
+                    resizablePanes.fileExplorer.style.display = 'none';
+                    resizablePanes.aiSupportPanel.style.display = 'none';
+                    verticalResizer.style.display = 'none';
+                    rightContainer.style.marginLeft = '0';
+                    rightContainer.style.maxWidth = 'calc(100vw - 48px)'; // Only account for button bar
+                    this.classList.remove('active');
+                    document.getElementById('explorer-toggle').classList.remove('active');
+                    document.getElementById('ai-support-toggle').classList.remove('active');
+                    resizablePanes.explorerVisible = false;
+                    resizablePanes.bitoolsVisible = false;
+                    resizablePanes.aiSupportVisible = false;
+                } else {
+                    // Show bitools with last known width
+                    resizablePanes.bitoolsPanel.style.display = 'flex';
+                    resizablePanes.bitoolsPanel.style.flex = `0 0 ${resizablePanes.lastExplorerWidth}`;
+                    resizablePanes.fileExplorer.style.display = 'none';
+                    resizablePanes.aiSupportPanel.style.display = 'none';
+                    verticalResizer.style.display = 'block';
+                    rightContainer.style.marginLeft = '';
+                    rightContainer.style.maxWidth = 'calc(100vw - 254px)'; // Account for button bar + resizer + min left width
+                    this.classList.add('active');
+                    document.getElementById('explorer-toggle').classList.remove('active');
+                    document.getElementById('ai-support-toggle').classList.remove('active');
+                    resizablePanes.explorerVisible = false;
+                    resizablePanes.bitoolsVisible = true;
+                    resizablePanes.aiSupportVisible = false;
+                    localStorage.setItem('lastActivePanel', 'bitools');
+                }
+                resizablePanes.saveCachedSettings();
+            });
+
+            // AI Support toggle functionality
+            const aiSupportToggle = document.getElementById('ai-support-toggle');
+
+            aiSupportToggle.addEventListener('click', function () {
+                const isVisible = resizablePanes.aiSupportPanel.style.display !== 'none';
+
+                if (isVisible) {
+                    // Hide AI Support
+                    resizablePanes.aiSupportPanel.style.display = 'none';
+                    resizablePanes.fileExplorer.style.display = 'none';
+                    resizablePanes.bitoolsPanel.style.display = 'none';
+                    verticalResizer.style.display = 'none';
+                    rightContainer.style.marginLeft = '0';
+                    rightContainer.style.maxWidth = 'calc(100vw - 48px)'; // Only account for button bar
+                    this.classList.remove('active');
+                    document.getElementById('explorer-toggle').classList.remove('active');
+                    document.getElementById('bitools-toggle').classList.remove('active');
+                    resizablePanes.explorerVisible = false;
+                    resizablePanes.bitoolsVisible = false;
+                    resizablePanes.aiSupportVisible = false;
+                } else {
+                    // Show AI Support with last known width
+                    resizablePanes.aiSupportPanel.style.display = 'flex';
+                    resizablePanes.aiSupportPanel.style.flex = `0 0 ${resizablePanes.lastExplorerWidth}`;
+                    resizablePanes.fileExplorer.style.display = 'none';
+                    resizablePanes.bitoolsPanel.style.display = 'none';
+                    verticalResizer.style.display = 'block';
+                    rightContainer.style.marginLeft = '';
+                    rightContainer.style.maxWidth = 'calc(100vw - 254px)'; // Account for button bar + resizer + min left width
+                    this.classList.add('active');
+                    document.getElementById('explorer-toggle').classList.remove('active');
+                    document.getElementById('bitools-toggle').classList.remove('active');
+                    resizablePanes.explorerVisible = false;
+                    resizablePanes.bitoolsVisible = false;
+                    resizablePanes.aiSupportVisible = true;
+                    localStorage.setItem('lastActivePanel', 'ai-support');
+                }
+                resizablePanes.saveCachedSettings();
+            });
+
+            // Terminal toggle functionality
+            const terminalToggle = document.getElementById('terminal-toggle');
+
+            terminalToggle.addEventListener('click', function () {
+                resizablePanes.toggleTerminal();
+            });
+
+            // Window control buttons
+            const { ipcRenderer } = require('electron');
+
+            document.getElementById('minimize-btn').addEventListener('click', () => {
+                ipcRenderer.send('minimize-window');
+            });
+
+            document.getElementById('maximize-btn').addEventListener('click', () => {
+                ipcRenderer.send('maximize-window');
+            });
+
+            document.getElementById('close-btn').addEventListener('click', () => {
+                ipcRenderer.send('close-window');
+            });
+        });
+
+        // Handle window resize to maintain proportions
+        window.addEventListener('resize', () => {
+            // Force a repaint to ensure proper sizing
+            document.body.style.display = 'none';
+            document.body.offsetHeight; // Trigger reflow
+            document.body.style.display = '';
+        });
+    </script>
+
+    <!-- Context Menu for File Explorer -->
+    <div class="cm-context-menu" id="cm-context-menu">
+        <div class="cm-context-menu-item" data-action="new-file">
+            <i class="cm-codicon cm-codicon-new-file"></i>
+            <span>New File</span>
+        </div>
+        <div class="cm-context-menu-item" data-action="new-folder">
+            <i class="cm-codicon cm-codicon-new-folder"></i>
+            <span>New Folder</span>
+        </div>
+        <div class="cm-context-menu-separator"></div>
+        <div class="cm-context-menu-item" data-action="paste" id="cm-paste-menu-item">
+            <i class="cm-codicon cm-codicon-paste"></i>
+            <span>Paste</span>
+        </div>
+        <div class="cm-context-menu-separator"></div>
+        <div class="cm-context-menu-item" data-action="cut">
+            <i class="cm-codicon cm-codicon-cut"></i>
+            <span>Cut</span>
+        </div>
+        <div class="cm-context-menu-item" data-action="copy">
+            <i class="cm-codicon cm-codicon-copy"></i>
+            <span>Copy</span>
+        </div>
+        <div class="cm-context-menu-separator"></div>
+        <div class="cm-context-menu-item" data-action="rename">
+            <i class="cm-codicon cm-codicon-edit"></i>
+            <span>Rename</span>
+        </div>
+        <div class="cm-context-menu-item" data-action="delete">
+            <i class="cm-codicon cm-codicon-trash"></i>
+            <span>Delete</span>
+        </div>
+        <div class="cm-context-menu-separator"></div>
+        <div class="cm-context-menu-item" data-action="reveal">
+            <i class="cm-codicon cm-codicon-folder-opened"></i>
+            <span>Reveal in File Explorer</span>
+        </div>
+    </div>
+
+    <!-- Input Dialog for File Explorer -->
+    <div class="cm-input-dialog-overlay" id="cm-input-dialog-overlay">
+        <div class="cm-input-dialog">
+            <div class="cm-input-dialog-header">
+                <h3 id="cm-input-dialog-title">Enter Name</h3>
+            </div>
+            <div class="cm-input-dialog-body">
+                <input type="text" id="cm-input-dialog-input" placeholder="Name" tabindex="1" autocomplete="off"
+                    spellcheck="false" />
+            </div>
+            <div class="cm-input-dialog-footer">
+                <button id="cm-input-dialog-cancel" class="cm-dialog-button cm-secondary">Cancel</button>
+                <button id="cm-input-dialog-ok" class="cm-dialog-button cm-primary">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="fileExplorer.js"></script>
+    <script>
+        // Initialize file explorer and Monaco Editor
+        let cmFileExplorer;
+        let monacoEditorInstance;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            cmFileExplorer = new ConceptualMapFileExplorer();
+            
+            // Initialize Monaco Editor instance and make it globally available
+            monacoEditorInstance = new MonacoEditor();
+            window.monacoEditorInstance = monacoEditorInstance;
+            
+            // Terminal tab switching logic
+            const terminalTabsBar = document.querySelector('.terminal-tabs-bar');
+            const terminalsPanel = document.querySelector('.terminals-panel');
+            console.log('Terminal tabs bar found:', terminalTabsBar);
+            
+            if (terminalTabsBar) {
+                terminalTabsBar.addEventListener('click', (e) => {
+                    console.log('Tab clicked:', e.target);
+                    const tab = e.target.closest('.terminal-tab');
+                    if (!tab) return;
+                    
+                    console.log('Tab found:', tab, 'data-tab:', tab.getAttribute('data-tab'));
+                    
+                    // Remove active from all tabs and panels
+                    terminalTabsBar.querySelectorAll('.terminal-tab').forEach(t => t.classList.remove('active'));
+                    document.querySelectorAll('.terminal-tab-panel').forEach(p => p.classList.remove('active'));
+                    
+                    // Activate clicked tab and corresponding panel
+                    tab.classList.add('active');
+                    const tabName = tab.getAttribute('data-tab');
+                    const panel = document.querySelector(`.terminal-tab-panel[data-tab="${tabName}"]`);
+                    console.log('Panel found:', panel);
+                    if (panel) panel.classList.add('active');
+                    
+                    // Show/hide terminals panel based on active tab
+                    if (tabName === 'terminal') {
+                        terminalsPanel.classList.remove('hidden');
+                    } else {
+                        terminalsPanel.classList.add('hidden');
+                    }
+                });
+            } else {
+                console.log('Terminal tabs bar not found');
+            }
+            
+            // Terminal list switching logic
+            const terminalsList = document.querySelector('.terminals-list');
+            if (terminalsList) {
+                terminalsList.addEventListener('click', (e) => {
+                    const terminalItem = e.target.closest('.terminal-item');
+                    if (!terminalItem) return;
+                    
+                    // Remove active from all terminal items
+                    terminalsList.querySelectorAll('.terminal-item').forEach(item => item.classList.remove('active'));
+                    
+                    // Activate clicked terminal item
+                    terminalItem.classList.add('active');
+                    
+                    console.log('Terminal switched to:', terminalItem.getAttribute('data-terminal'));
+                });
+            }
+        });
+    </script>
+
+    <!-- Monaco Editor Integration -->
+    <script src="monaco-integration.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,51 @@
+{
+    "name": "monaco-editor-electron",
+    "version": "1.0.0",
+    "description": "A code editor built with Electron and Monaco Editor",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "dev": "NODE_ENV=development electron .",
+        "build": "electron-builder",
+        "build-win": "electron-builder --win",
+        "build-mac": "electron-builder --mac",
+        "build-linux": "electron-builder --linux"
+    },
+    "keywords": [
+        "electron",
+        "monaco",
+        "editor",
+        "code"
+    ],
+    "author": "Your Name",
+    "license": "MIT",
+    "devDependencies": {
+        "electron": "^27.0.0",
+        "electron-builder": "^24.6.4"
+    },
+    "build": {
+        "appId": "com.yourcompany.monaco-editor",
+        "productName": "Monaco Editor",
+        "directories": {
+            "output": "dist"
+        },
+        "files": [
+            "main.js",
+            "preload.js",
+            "index.html",
+            "package.json"
+        ],
+        "mac": {
+            "category": "public.app-category.developer-tools"
+        },
+        "win": {
+            "target": "nsis"
+        },
+        "linux": {
+            "target": "AppImage"
+        }
+    },
+    "dependencies": {
+        "perlnavigator-server": "^0.8.18"
+    }
+}

@@ -1,0 +1,344 @@
+{
+  "modules": [
+    "strict",
+    "warnings",
+    "Data::Dumper",
+    "JSON",
+    "XML::Simple",
+    "LWP::Simple",
+    "File::Path",
+    "File::Copy",
+    "Getopt::Long",
+    "Pod::Usage",
+    "Carp",
+    "Exporter",
+    "POSIX",
+    "Time::Piece",
+    "DateTime",
+    "DBI",
+    "DBD::SQLite",
+    "Moose",
+    "Moo",
+    "Try::Tiny",
+    "autodie",
+    "feature",
+    "utf8",
+    "open",
+    "FindBin",
+    "lib",
+    "base",
+    "parent",
+    "CGI",
+    "HTML::Entities",
+    "HTTP::Request",
+    "LWP::UserAgent",
+    "Net::FTP",
+    "Net::SMTP",
+    "Mail::Send",
+    "Text::CSV",
+    "Spreadsheet::WriteExcel",
+    "Archive::Zip",
+    "Compress::Zlib",
+    "Digest::MD5",
+    "Digest::SHA",
+    "MIME::Base64",
+    "Term::ReadLine",
+    "Term::ANSIColor",
+    "IO::Handle",
+    "IO::File",
+    "IO::Socket",
+    "IO::Socket::INET",
+    "IO::Select",
+    "IO::Pipe",
+    "File::Spec",
+    "File::Basename",
+    "File::Glob",
+    "DirHandle",
+    "Cwd",
+    "Sys::Hostname",
+    "Sys::Syslog",
+    "Time::HiRes",
+    "Time::Local",
+    "Time::ParseDate",
+    "Date::Parse",
+    "Date::Manip",
+    "Bio::Perl",
+    "Bio::Seq",
+    "Bio::SeqIO",
+    "Bio::DB::GenBank",
+    "Bio::DB::SwissProt",
+    "Bio::DB::EMBL",
+    "Bio::Tools::Run::StandAloneBlast",
+    "Bio::Tools::Run::Alignment::Clustalw",
+    "Bio::Tools::Run::Alignment::Muscle",
+    "Bio::Tools::Run::Alignment::Tcoffee",
+    "Bio::Tools::Run::Phylogeny::Fasttree",
+    "Bio::Tools::Run::Phylogeny::Raxml",
+    "Bio::Tools::Run::Phylogeny::Mrbayes",
+    "Bio::Tools::Run::Phylogeny::Phyml",
+    "Bio::Tools::Run::Phylogeny::Paml",
+    "Bio::Tools::Run::Phylogeny::Codemi",
+    "Bio::Tools::Run::Phylogeny::Baseml",
+    "Bio::Tools::Run::Phylogeny::Evolver",
+    "Bio::Tools::Run::Phylogeny::Seqgen",
+    "Bio::Tools::Run::Phylogeny::Treebest",
+    "Bio::Tools::Run::Phylogeny::PhyML",
+    "Bio::Tools::Run::Phylogeny::RAxML",
+    "Bio::Tools::Run::Phylogeny::FastTree",
+    "Bio::Tools::Run::Phylogeny::IQTree",
+    "Bio::Tools::Run::Phylogeny::BEAST",
+    "Bio::Tools::Run::Phylogeny::MrBayes",
+    "Bio::Tools::Run::Phylogeny::PAML",
+    "Bio::Tools::Run::Phylogeny::CODEML",
+    "Bio::Tools::Run::Phylogeny::BASEML",
+    "Bio::Tools::Run::Phylogeny::Evolver",
+    "Bio::Tools::Run::Phylogeny::SeqGen",
+    "Bio::Tools::Run::Phylogeny::TreeBest"
+  ],
+  "moduleFunctions": {
+    "Time::Piece": [
+      "localtime", "gmtime", "strptime", "strftime", "year", "month", "day",
+      "hour", "minute", "second", "wday", "yday", "isdst", "epoch", "tzoffset",
+      "tzname", "julian_day", "mjd", "week", "is_leap_year", "add", "subtract"
+    ],
+    "File::Find": [
+      "find", "finddepth", "wanted"
+    ],
+    "File::Path": [
+      "mkpath", "make_path", "rmtree", "remove_tree"
+    ],
+    "File::Copy": [
+      "copy", "move", "cp", "mv"
+    ],
+    "Data::Dumper": [
+      "Dumper", "DumperX", "Dump", "Dumpxs", "Dumpxs", "Dumpxs"
+    ],
+    "JSON": [
+      "encode_json", "decode_json", "encode", "decode", "to_json", "from_json"
+    ],
+    "XML::Simple": [
+      "XMLin", "XMLout", "XMLin", "XMLout"
+    ],
+    "LWP::Simple": [
+      "get", "head", "getprint", "getstore", "mirror"
+    ],
+    "Getopt::Long": [
+      "GetOptions", "Configure", "GetOptionsFromArray", "GetOptionsFromString"
+    ],
+    "Carp": [
+      "croak", "confess", "cluck", "carp", "longmess", "shortmess"
+    ],
+    "POSIX": [
+      "strftime", "localtime", "gmtime", "time", "sleep", "exit", "abs",
+      "ceil", "floor", "round", "sin", "cos", "tan", "sqrt", "log", "exp"
+    ],
+    "DateTime": [
+      "now", "today", "from_epoch", "from_object", "new", "add", "subtract",
+      "year", "month", "day", "hour", "minute", "second", "strftime", "epoch"
+    ],
+    "DBI": [
+      "connect", "disconnect", "prepare", "execute", "fetchrow_array",
+      "fetchrow_hashref", "fetchall_arrayref", "do", "commit", "rollback"
+    ],
+    "Moose": [
+      "extends", "with", "has", "before", "after", "around", "override",
+      "super", "confess", "croak", "carp", "cluck"
+    ],
+    "Try::Tiny": [
+      "try", "catch", "finally"
+    ],
+    "autodie": [
+      "open", "close", "read", "write", "system", "exec", "fork", "wait"
+    ],
+    "feature": [
+      "say", "state", "switch", "unicode_strings", "unicode_eval", "evalbytes"
+    ],
+    "utf8": [
+      "encode", "decode", "is_utf8", "valid", "upgrade", "downgrade"
+    ],
+    "open": [
+      "open", "close", "read", "write", "seek", "tell", "truncate"
+    ],
+    "FindBin": [
+      "Bin", "Script", "RealBin", "RealScript"
+    ],
+    "lib": [
+      "import", "unimport"
+    ],
+    "base": [
+      "import", "unimport"
+    ],
+    "parent": [
+      "import", "unimport"
+    ],
+    "CGI": [
+      "new", "param", "header", "start_html", "end_html", "textfield",
+      "textarea", "checkbox", "radio_group", "popup_menu", "submit", "reset"
+    ],
+    "HTML::Entities": [
+      "encode_entities", "decode_entities", "encode_entities_numeric",
+      "decode_entities_numeric"
+    ],
+    "HTTP::Request": [
+      "new", "method", "uri", "header", "content", "content_type"
+    ],
+    "LWP::UserAgent": [
+      "new", "get", "post", "head", "request", "simple_request", "mirror"
+    ],
+    "Net::FTP": [
+      "new", "login", "cwd", "get", "put", "ls", "mkdir", "rmdir", "delete"
+    ],
+    "Net::SMTP": [
+      "new", "mail", "to", "data", "dataend", "quit", "auth"
+    ],
+    "Mail::Send": [
+      "new", "to", "subject", "cc", "bcc", "add", "send"
+    ],
+    "Text::CSV": [
+      "new", "parse", "fields", "combine", "string", "getline", "print"
+    ],
+    "Spreadsheet::WriteExcel": [
+      "new", "add_worksheet", "write", "write_string", "write_number",
+      "write_formula", "close"
+    ],
+    "Archive::Zip": [
+      "new", "read", "write", "addFile", "addString", "extractTree"
+    ],
+    "Compress::Zlib": [
+      "compress", "uncompress", "deflate", "inflate", "gzopen", "gzread", "gzwrite"
+    ],
+    "Digest::MD5": [
+      "new", "add", "addfile", "digest", "hexdigest", "b64digest"
+    ],
+    "Digest::SHA": [
+      "new", "add", "addfile", "digest", "hexdigest", "b64digest"
+    ],
+    "MIME::Base64": [
+      "encode", "decode", "encode_base64", "decode_base64"
+    ],
+    "Term::ReadLine": [
+      "new", "readline", "addhistory", "findConsole"
+    ],
+    "Term::ANSIColor": [
+      "colored", "color", "colorvalid", "colorstrip", "uncolor"
+    ],
+    "IO::Handle": [
+      "new", "open", "close", "read", "write", "seek", "tell", "truncate"
+    ],
+    "IO::File": [
+      "new", "open", "close", "read", "write", "seek", "tell", "truncate"
+    ],
+    "IO::Socket": [
+      "new", "accept", "connect", "send", "recv", "close"
+    ],
+    "IO::Socket::INET": [
+      "new", "accept", "connect", "send", "recv", "close"
+    ],
+    "IO::Select": [
+      "new", "add", "remove", "can_read", "can_write", "has_exception"
+    ],
+    "IO::Pipe": [
+      "new", "reader", "writer", "close"
+    ],
+    "File::Spec": [
+      "catfile", "catdir", "curdir", "rootdir", "updir", "no_upwards",
+      "case_tolerant", "file_name_is_absolute", "path"
+    ],
+    "File::Basename": [
+      "basename", "dirname", "fileparse", "suffix"
+    ],
+    "File::Glob": [
+      "bsd_glob", "glob"
+    ],
+    "DirHandle": [
+      "new", "read", "rewind", "close"
+    ],
+    "Cwd": [
+      "cwd", "getcwd", "abs_path", "realpath", "fastcwd", "fastgetcwd"
+    ],
+    "Sys::Hostname": [
+      "hostname", "hostname"
+    ],
+    "Sys::Syslog": [
+      "openlog", "syslog", "closelog", "setlogmask"
+    ],
+    "Time::HiRes": [
+      "time", "sleep", "usleep", "nanosleep", "alarm", "gettimeofday"
+    ],
+    "Time::Local": [
+      "timelocal", "timegm", "timegm_nocheck", "timelocal_nocheck"
+    ],
+    "Time::ParseDate": [
+      "parsedate", "parsedate_recurring"
+    ],
+    "Date::Parse": [
+      "str2time", "strptime"
+    ],
+    "Date::Manip": [
+      "Date_Init", "ParseDate", "ParseDateString", "UnixDate", "DateCalc"
+    ],
+    "Bio::Perl": [
+      "new", "seq", "seqio", "db", "tools", "run"
+    ],
+    "Bio::Seq": [
+      "new", "seq", "display_id", "desc", "length", "subseq", "revcom", "translate"
+    ],
+    "Bio::SeqIO": [
+      "new", "next_seq", "write_seq", "format", "file"
+    ],
+    "Bio::DB::GenBank": [
+      "new", "get_Seq_by_id", "get_Seq_by_acc", "get_Seq_by_version"
+    ],
+    "Bio::DB::SwissProt": [
+      "new", "get_Seq_by_id", "get_Seq_by_acc"
+    ],
+    "Bio::DB::EMBL": [
+      "new", "get_Seq_by_id", "get_Seq_by_acc"
+    ],
+    "Bio::Tools::Run::StandAloneBlast": [
+      "new", "blastall", "blastpgp", "blastn", "blastp", "blastx", "tblastn", "tblastx"
+    ],
+    "Bio::Tools::Run::Alignment::Clustalw": [
+      "new", "program_name", "program_dir", "run", "align"
+    ],
+    "Bio::Tools::Run::Alignment::Muscle": [
+      "new", "program_name", "program_dir", "run", "align"
+    ],
+    "Bio::Tools::Run::Alignment::Tcoffee": [
+      "new", "program_name", "program_dir", "run", "align"
+    ],
+    "Bio::Tools::Run::Phylogeny::Fasttree": [
+      "new", "program_name", "program_dir", "run", "tree"
+    ],
+    "Bio::Tools::Run::Phylogeny::Raxml": [
+      "new", "program_name", "program_dir", "run", "tree"
+    ],
+    "Bio::Tools::Run::Phylogeny::Mrbayes": [
+      "new", "program_name", "program_dir", "run", "tree"
+    ],
+    "Bio::Tools::Run::Phylogeny::Phyml": [
+      "new", "program_name", "program_dir", "run", "tree"
+    ],
+    "Bio::Tools::Run::Phylogeny::Paml": [
+      "new", "program_name", "program_dir", "run", "tree"
+    ],
+    "Bio::Tools::Run::Phylogeny::Codemi": [
+      "new", "program_name", "program_dir", "run", "tree"
+    ],
+    "Bio::Tools::Run::Phylogeny::Baseml": [
+      "new", "program_name", "program_dir", "run", "tree"
+    ],
+    "Bio::Tools::Run::Phylogeny::Evolver": [
+      "new", "program_name", "program_dir", "run", "tree"
+    ],
+    "Bio::Tools::Run::Phylogeny::Seqgen": [
+      "new", "program_name", "program_dir", "run", "tree"
+    ],
+    "Bio::Tools::Run::Phylogeny::Treebest": [
+      "new", "program_name", "program_dir", "run", "tree"
+    ]
+  },
+  "lastUpdated": "2024-01-01T00:00:00.000Z",
+  "totalModules": 100,
+  "totalFunctions": 500
+}

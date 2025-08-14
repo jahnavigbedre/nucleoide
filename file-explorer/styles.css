@@ -1,0 +1,614 @@
+/* VS Code Dark Theme Colors */
+:root {
+    --bg-primary: #1e1e1e;
+    --bg-secondary: #252526;
+    --bg-tertiary: #2d2d30;
+    --bg-quaternary: #3c3c3c;
+    --bg-overlay: #424242;
+    
+    --text-primary: #cccccc;
+    --text-secondary: #969696;
+    --text-disabled: #6a6a6a;
+    
+    --accent-primary: #007acc;
+    --accent-secondary: #0e639c;
+    --accent-tertiary: #094771;
+    
+    --border-primary: #3c3c3c;
+    --border-secondary: #474747;
+    
+    --selection-bg: #264f78;
+    --hover-bg: #2a2d2e;
+    
+    --error: #f48771;
+    --warning: #cca700;
+    --success: #89d185;
+    
+    --explorer-width: 300px;
+    --header-height: 35px;
+}
+
+/* Icon Definitions */
+.codicon {
+    display: inline-block;
+    line-height: 1;
+    text-align: center;
+    text-rendering: auto;
+    text-transform: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-style: normal;
+    font-weight: normal;
+}
+
+/* File and folder icons using Unicode characters */
+.codicon-folder::before { content: "📁"; }
+.codicon-folder-opened::before { content: "📂"; }
+.codicon-file::before { content: "📄"; }
+.codicon-file-code::before { content: "📝"; }
+.codicon-file-media::before { content: "🎬"; }
+.codicon-file-zip::before { content: "📦"; }
+.codicon-file-pdf::before { content: "📕"; }
+.codicon-settings-gear::before { content: "⚙️"; }
+
+/* Action icons */
+.codicon-new-file::before { content: "📄"; }
+.codicon-new-folder::before { content: "📁"; }
+.codicon-refresh::before { content: "🔄"; }
+.codicon-edit::before { content: "✏️"; }
+.codicon-trash::before { content: "🗑️"; }
+.codicon-copy::before { content: "📋"; }
+.codicon-cut::before { content: "✂️"; }
+.codicon-paste::before { content: "📋"; }
+.codicon-chevron-right::before { content: "▶"; }
+.codicon-chevron-down::before { content: "▼"; }
+.codicon-close::before { content: "✕"; }
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    overflow: hidden;
+    user-select: none;
+}
+
+.app-container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+}
+
+/* File Explorer */
+.file-explorer {
+    width: var(--explorer-width);
+    background-color: var(--bg-secondary);
+    border-right: 1px solid var(--border-primary);
+    display: flex;
+    flex-direction: column;
+}
+
+.explorer-header {
+    height: var(--header-height);
+    background-color: var(--bg-tertiary);
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8px;
+    flex-shrink: 0;
+}
+
+.explorer-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.explorer-actions {
+    display: flex;
+    gap: 4px;
+}
+
+.action-button {
+    width: 24px;
+    height: 24px;
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 3px;
+    transition: all 0.2s ease;
+}
+
+.action-button:hover {
+    background-color: var(--hover-bg);
+    color: var(--text-primary);
+}
+
+.action-button i {
+    font-size: 14px;
+}
+
+/* Explorer Content */
+.explorer-content {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.file-tree {
+    flex: 1;
+    padding: 8px 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.tree-item {
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    position: relative;
+}
+
+.tree-item:hover {
+    background-color: var(--hover-bg);
+}
+
+/* Only apply selection styling to direct children of .file-tree, not nested children */
+.file-tree > .tree-item.selected {
+    background-color: var(--selection-bg);
+}
+
+.file-tree > .tree-item.selected::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--accent-primary);
+}
+
+/* Ensure nested children never get selection background from parent */
+.tree-item-children .tree-item {
+    background-color: transparent !important;
+}
+
+.tree-item-children .tree-item:hover {
+    background-color: var(--hover-bg) !important;
+}
+
+/* Only allow selection styling for directly selected nested items */
+.tree-item-children .tree-item.selected {
+    background-color: var(--selection-bg) !important;
+}
+
+.tree-item-children .tree-item.selected::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background-color: var(--accent-primary);
+}
+
+.tree-item-content {
+    display: flex;
+    align-items: center;
+    padding: 2px 8px;
+    min-height: 22px;
+    flex-shrink: 0;
+}
+
+.tree-item-icon {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.tree-item-icon i {
+    font-size: 14px;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.tree-item-name {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.tree-item-children {
+    display: none;
+    margin-left: 16px;
+    border-left: 1px solid var(--border-primary);
+    margin-left: 16px;
+    padding-left: 8px;
+}
+
+.tree-item-children.expanded {
+    display: block;
+}
+
+.tree-item-toggle {
+    width: 16px;
+    height: 16px;
+    margin-right: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.tree-item-toggle.expanded {
+    transform: rotate(90deg);
+}
+
+.tree-item-toggle i {
+    font-size: 12px;
+    font-style: normal;
+    font-weight: normal;
+}
+
+/* Main Content */
+.main-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-primary);
+}
+
+.content-header {
+    height: var(--header-height);
+    background-color: var(--bg-secondary);
+    border-bottom: 1px solid var(--border-primary);
+    display: flex;
+    align-items: center;
+    padding: 0 12px;
+    flex-shrink: 0;
+}
+
+.current-path {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+}
+
+.content-area {
+    flex: 1;
+    padding: 20px;
+    overflow: auto;
+}
+
+.welcome-content {
+    max-width: 600px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.welcome-content h1 {
+    font-size: 24px;
+    margin-bottom: 16px;
+    color: var(--text-primary);
+}
+
+.welcome-content p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 32px;
+}
+
+.file-info {
+    text-align: left;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 6px;
+    padding: 20px;
+}
+
+.file-info h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--text-primary);
+}
+
+.file-info p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 8px;
+}
+
+/* Context Menu */
+.context-menu {
+    position: fixed;
+    background-color: var(--bg-quaternary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 6px;
+    padding: 4px 0;
+    min-width: 160px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    z-index: 1000;
+    display: none;
+}
+
+.context-menu-item {
+    display: flex;
+    align-items: center;
+    padding: 6px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text-primary);
+    transition: background-color 0.2s ease;
+}
+
+.context-menu-item:hover {
+    background-color: var(--hover-bg);
+}
+
+.context-menu-item i {
+    width: 16px;
+    margin-right: 8px;
+    font-size: 14px;
+    color: var(--text-secondary);
+    font-style: normal;
+    font-weight: normal;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background-color: var(--border-primary);
+    margin: 4px 0;
+}
+
+/* Input Dialog */
+.input-dialog-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1002;
+    display: none;
+    align-items: center;
+    justify-content: center;
+}
+
+.input-dialog {
+    background-color: var(--bg-quaternary);
+    border: 1px solid var(--border-secondary);
+    border-radius: 6px;
+    min-width: 300px;
+    max-width: 400px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.input-dialog-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border-primary);
+}
+
+.input-dialog-header span {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.input-dialog-content {
+    padding: 16px;
+}
+
+.input-dialog-input {
+    width: 100%;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--text-primary);
+    outline: none;
+    cursor: text;
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
+
+.input-dialog-input:focus {
+    border-color: var(--accent-primary);
+}
+
+.input-dialog-actions {
+    padding: 12px 16px;
+    border-top: 1px solid var(--border-primary);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.input-dialog-btn {
+    padding: 6px 12px;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-primary);
+    border-radius: 4px;
+    color: var(--text-primary);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.input-dialog-btn:hover {
+    background-color: var(--hover-bg);
+}
+
+.input-dialog-btn.primary {
+    background-color: var(--accent-primary);
+    border-color: var(--accent-primary);
+    color: white;
+}
+
+.input-dialog-btn.primary:hover {
+    background-color: var(--accent-secondary);
+}
+
+/* File Type Icons */
+.file-icon {
+    color: var(--text-secondary);
+}
+
+.file-icon.folder {
+    color: #c5c5c5;
+}
+
+.file-icon.file {
+    color: #cccccc;
+}
+
+.file-icon.image {
+    color: #4ec9b0;
+}
+
+.file-icon.video {
+    color: #4ec9b0;
+}
+
+.file-icon.audio {
+    color: #4ec9b0;
+}
+
+.file-icon.archive {
+    color: #ff7b72;
+}
+
+.file-icon.code {
+    color: #4ec9b0;
+}
+
+.file-icon.config {
+    color: #dcdcaa;
+}
+
+.file-icon.document {
+    color: #4ec9b0;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+    width: 14px;
+    height: 14px;
+}
+
+::-webkit-scrollbar-track {
+    background-color: var(--bg-primary);
+}
+
+::-webkit-scrollbar-thumb {
+    background-color: var(--bg-quaternary);
+    border: 3px solid var(--bg-primary);
+    border-radius: 7px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background-color: var(--bg-overlay);
+}
+
+::-webkit-scrollbar-corner {
+    background-color: var(--bg-primary);
+}
+
+/* File Explorer Specific Scrollbar */
+.file-tree::-webkit-scrollbar {
+    width: 8px;
+}
+
+.file-tree::-webkit-scrollbar-track {
+    background-color: var(--bg-secondary);
+}
+
+.file-tree::-webkit-scrollbar-thumb {
+    background-color: var(--bg-quaternary);
+    border: 2px solid var(--bg-secondary);
+    border-radius: 4px;
+}
+
+.file-tree::-webkit-scrollbar-thumb:hover {
+    background-color: var(--bg-overlay);
+}
+
+/* Drag and Drop */
+.drag-over {
+    background-color: var(--selection-bg) !important;
+}
+
+.drag-indicator {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: var(--accent-primary);
+    pointer-events: none;
+    z-index: 100;
+}
+
+.drag-indicator.before {
+    top: 0;
+}
+
+.drag-indicator.after {
+    bottom: 0;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.context-menu {
+    animation: fadeIn 0.2s ease;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .file-explorer {
+        width: 250px;
+    }
+} 

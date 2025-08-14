@@ -1,0 +1,41 @@
+# Node modules
+node_modules/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Build output
+dist/
+build/
+
+# Electron
+*.asar
+
+# VS Code
+.vscode/
+
+# Environment
+.env
+.env.*
+
+# Cache
+.cache/
+
+# Misc
+*.swp
+*.swo
+.idea/
+
+# Git
+.git/
+
+# Package lock
+package-lock.json

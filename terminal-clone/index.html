@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electron Terminal</title>
+    <link rel="stylesheet" href="xterm.css">
+    
+</head>
+
+<body>
+    <div id="terminal"></div>
+    <script src="xterm.js"></script>
+    <script>
+        const { ipcRenderer } = require('electron');
+        const { Terminal } = require('@xterm/xterm');
+        const { FitAddon } = require('@xterm/addon-fit');
+
+        const terminal = new Terminal();
+        const fitAddon = new FitAddon();
+        terminal.loadAddon(fitAddon);
+
+        const terminalElement = document.getElementById('terminal');
+        terminal.open(terminalElement);
+
+        // Function to fit terminal to container
+        const fitTerminal = () => {
+            fitAddon.fit();
+        };
+
+        const resizeObserver = new ResizeObserver(fitTerminal);
+        resizeObserver.observe(terminalElement);
+        window.addEventListener('resize', fitTerminal);
+
+        // Initial fit
+        fitTerminal();
+
+        terminal.onData(data => {
+            ipcRenderer.send('terminal-input', data);
+        });
+
+        ipcRenderer.on('terminal-output', (event, data) => {
+            terminal.write(data);
+        });
+    </script>
+</body>
+
+</html>

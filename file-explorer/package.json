@@ -1,0 +1,27 @@
+{
+  "name": "file-explorer",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "start-quiet": "electron . --disable-dev-shm-usage --no-sandbox",
+    "dev": "NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "electron",
+    "file-explorer",
+    "vscode-style"
+  ],
+  "author": "",
+  "license": "ISC",
+  "description": "VS Code-style file explorer built with Electron",
+  "dependencies": {
+    "chokidar": "^3.6.0",
+    "electron": "^37.2.5"
+  },
+  "devDependencies": {
+    "electron-builder": "^24.9.1"
+  }
+}

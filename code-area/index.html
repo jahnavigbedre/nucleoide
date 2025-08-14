@@ -1,0 +1,970 @@
+// index.html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Monaco Editor</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #1e1e1e;
+      color: #cccccc;
+      overflow: hidden;
+    }
+    
+    .header {
+      height: 40px;
+      background: #2d2d30;
+      border-bottom: 1px solid #3e3e42;
+      display: flex;
+      align-items: center;
+      padding: 0 15px;
+      font-size: 14px;
+    }
+    
+    .file-name {
+      margin-right: 10px;
+      font-weight: 500;
+    }
+    
+    .modified-indicator {
+      color: #fff;
+      margin-left: 5px;
+    }
+    
+    .language-selector {
+      margin-left: auto;
+      background: #3c3c3c;
+      border: 1px solid #464647;
+      color: #cccccc;
+      padding: 4px 8px;
+      border-radius: 3px;
+      font-size: 12px;
+    }
+    
+    #container {
+      height: calc(100vh - 40px);
+      width: 100vw;
+    }
+    
+    .status-bar {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 22px;
+      background: #007acc;
+      color: white;
+      display: flex;
+      align-items: center;
+      padding: 0 10px;
+      font-size: 12px;
+      z-index: 1000;
+    }
+    
+    .status-item {
+      margin-right: 15px;
+    }
+    
+    #statusBar {
+      font-style: italic;
+    }
+    
+    #errorCount {
+      color: #ff6b6b;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    #warningCount {
+      color: #ffd93d;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .status-icon {
+      width: 14px;
+      height: 14px;
+    }
+  </style>
+</head>
+<body>  
+  <div id="container"></div>
+  
+  <div class="status-bar">
+    <span class="status-item" id="cursorPosition">Ln 1, Col 1</span>
+    <span class="status-item" id="selectionInfo"></span>
+    <span class="status-item" id="encoding">UTF-8</span>
+    <span class="status-item" id="statusBar"></span>
+    <span class="status-item" id="errorCount">
+      <img src="public/error.svg" alt="Error" class="status-icon">
+      <span>0</span>
+    </span>
+    <span class="status-item" id="warningCount">
+      <img src="public/warning.svg" alt="Warning" class="status-icon">
+      <span>0</span>
+    </span>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
+  <script>
+    let editor;
+    let currentFilePath = null;
+    let isModified = false;
+    let cachedModules = null; // Cache for modules from JSON
+    
+    // Configure Monaco Editor
+    require.config({ 
+      paths: { 
+        'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' 
+      } 
+    });
+    
+    // Load modules from JSON file
+    async function loadModulesFromJSON() {
+      if (cachedModules) {
+        return cachedModules;
+      }
+      
+      try {
+        const response = await fetch('modules.json');
+        const data = await response.json();
+        cachedModules = data.modules || [];
+        console.log(`Loaded ${cachedModules.length} modules from JSON`);
+        return cachedModules;
+      } catch (error) {
+        console.error('Error loading modules from JSON:', error);
+        // Fallback to basic modules
+        cachedModules = ['strict', 'warnings', 'Data::Dumper', 'JSON', 'XML::Simple'];
+        return cachedModules;
+      }
+    }
+    
+    // Clear module cache (for reloading)
+    function clearModuleCache() {
+      cachedModules = null;
+    }
+    
+    require(['vs/editor/editor.main'], function () {
+      // Create the editor
+      editor = monaco.editor.create(document.getElementById('container'), {
+        value: "# Welcome to Monaco Editor!\n# Start typing to begin...\n\nuse Time::Piece;\n",
+        language: 'perl',
+        theme: 'vs-dark',
+        automaticLayout: true,
+        fontSize: 14,
+        minimap: { enabled: true },
+        scrollBeyondLastLine: false,
+        wordWrap: 'on',
+        lineNumbers: 'on',
+        renderWhitespace: 'selection',
+        folding: true,
+        links: true,
+        colorDecorators: true,
+        contextmenu: true,
+        mouseWheelZoom: true
+      });
+      
+      // Add custom context menu
+      editor.addAction({
+        id: 'toggle-minimap',
+        label: 'Toggle Minimap',
+        keybindings: [],
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.5,
+        run: function(ed) {
+          const currentMinimap = ed.getOption(monaco.editor.EditorOption.minimap);
+          ed.updateOptions({
+            minimap: { enabled: !currentMinimap.enabled }
+          });
+        }
+      });
+      
+      // Add separator in context menu
+      editor.addAction({
+        id: 'separator-1',
+        label: '─────────',
+        keybindings: [],
+        contextMenuGroupId: 'navigation',
+        contextMenuOrder: 1.6,
+        run: function(ed) {
+          // This is just a separator, no action needed
+        }
+      });
+      
+      // Perl boilerplate completion provider
+      monaco.languages.registerCompletionItemProvider('perl', {
+        provideCompletionItems: function(model, position) {
+          const textUntilPosition = model.getValueInRange({
+            startLineNumber: position.lineNumber,
+            startColumn: 1,
+            endLineNumber: position.lineNumber,
+            endColumn: position.column
+          });
+          if (/\bplb$/.test(textUntilPosition)) {
+            return {
+              suggestions: [
+                {
+                  label: 'Perl Boilerplate',
+                  kind: monaco.languages.CompletionItemKind.Snippet,
+                  insertText: '#!/usr/bin/perl\nuse strict;\nuse warnings;\n\n',
+                  insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                  range: {
+                    startLineNumber: position.lineNumber,
+                    startColumn: position.column - 3, // length of 'plb'
+                    endLineNumber: position.lineNumber,
+                    endColumn: position.column
+                  },
+                  documentation: 'Insert Perl boilerplate: shebang, strict, warnings'
+                }
+              ]
+            };
+          }
+          return { suggestions: [] };
+        }
+      });
+
+      // Single completion provider for variables only
+      monaco.languages.registerCompletionItemProvider('perl', {
+        triggerCharacters: ['$', '@', '%'],
+        provideCompletionItems: function(model, position) {
+          const fullText = model.getValue();
+          const suggestions = [];
+          
+          console.log('Completion provider triggered');
+          
+          // Get the text at current position to see what was typed
+          const currentLine = model.getLineContent(position.lineNumber);
+          const textBeforeCursor = currentLine.substring(0, position.column - 1);
+          
+          console.log('Current line:', currentLine);
+          console.log('Text before cursor:', textBeforeCursor);
+          
+          // Check if we're typing a variable (starts with $, @, or %)
+          const variableMatch = textBeforeCursor.match(/([$@%][\w]*)$/);
+          if (variableMatch) {
+            const typedText = variableMatch[1];
+            const sigil = typedText[0]; // $, @, or %
+            const variableName = typedText.substring(1); // rest of the variable name
+            
+            console.log('Typed text:', typedText, 'Sigil:', sigil, 'Variable name:', variableName);
+            
+            // Find all variables with this sigil
+            // Look for both 'my' declarations and direct assignments
+            const patterns = [
+              new RegExp(`my\\s+(${sigil.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\w]+)`, 'g'),
+              new RegExp(`(${sigil.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}[\\w]+)\\s*=`, 'g')
+            ];
+            
+            patterns.forEach((pattern, index) => {
+              console.log(`Checking pattern ${index}:`, pattern);
+              let match;
+              while ((match = pattern.exec(fullText)) !== null) {
+                const fullVariableName = match[1];
+                const varNameWithoutSigil = fullVariableName.substring(1);
+                
+                console.log('Found variable:', fullVariableName, 'without sigil:', varNameWithoutSigil);
+                
+                // Only suggest if it matches what we're typing
+                if (varNameWithoutSigil.toLowerCase().startsWith(variableName.toLowerCase())) {
+                  suggestions.push({
+                    label: fullVariableName,
+                    kind: monaco.languages.CompletionItemKind.Variable,
+                    insertText: fullVariableName,
+                    documentation: `Variable (${sigil === '$' ? 'scalar' : sigil === '@' ? 'array' : 'hash'})`,
+                    range: {
+                      startLineNumber: position.lineNumber,
+                      startColumn: position.column - typedText.length,
+                      endLineNumber: position.lineNumber,
+                      endColumn: position.column
+                    }
+                  });
+                }
+              }
+            });
+            
+            console.log('Found suggestions:', suggestions);
+          } else {
+            console.log('No variable match found');
+          }
+          
+          return { suggestions: suggestions };
+        }
+      });
+
+      // Completion provider for user-defined functions
+      monaco.languages.registerCompletionItemProvider('perl', {
+        triggerCharacters: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+        provideCompletionItems: function(model, position) {
+          const fullText = model.getValue();
+          const suggestions = [];
+          
+          console.log('Function completion provider triggered');
+          
+          // Get the text at current position to see what was typed
+          const currentLine = model.getLineContent(position.lineNumber);
+          const textBeforeCursor = currentLine.substring(0, position.column - 1);
+          
+          console.log('Current line:', currentLine);
+          console.log('Text before cursor:', textBeforeCursor);
+          
+          // Check if we're typing a function name (word starting with letter)
+          const functionMatch = textBeforeCursor.match(/([a-zA-Z][\w]*)$/);
+          if (functionMatch) {
+            const typedText = functionMatch[1];
+            console.log('Typed function text:', typedText);
+            
+            // Add built-in Perl functions
+            const builtinFunctions = getBuiltinFunctions();
+            builtinFunctions.forEach(func => {
+              if (func.toLowerCase().startsWith(typedText.toLowerCase())) {
+                suggestions.push({
+                  label: func,
+                  kind: monaco.languages.CompletionItemKind.Function,
+                  insertText: func + '(${1})',
+                  insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                  documentation: `Built-in Perl function`,
+                  detail: 'Built-in function',
+                  sortText: '0' + func.toLowerCase(),
+                  range: {
+                    startLineNumber: position.lineNumber,
+                    startColumn: position.column - typedText.length,
+                    endLineNumber: position.lineNumber,
+                    endColumn: position.column
+                  }
+                });
+              }
+            });
+            
+            // Add Perl keywords
+            const perlKeywords = getPerlKeywords();
+            perlKeywords.forEach(keyword => {
+              if (keyword.toLowerCase().startsWith(typedText.toLowerCase())) {
+                let insertText = keyword + ' ';
+                let insertTextRules = monaco.languages.CompletionItemInsertTextRule.None;
+                
+                // Special handling for control flow keywords
+                if (['if', 'elsif', 'unless', 'while', 'until', 'for', 'foreach'].includes(keyword)) {
+                  insertText = keyword + ' (${1:condition}) {\n\t${2}\n}';
+                  insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+                } else if (['sub'].includes(keyword)) {
+                  insertText = keyword + ' ${1:function_name} {\n\t${2}\n}';
+                  insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+                } else if (['package'].includes(keyword)) {
+                  insertText = keyword + ' ${1:Package::Name};';
+                  insertTextRules = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
+                }
+                
+                suggestions.push({
+                  label: keyword,
+                  kind: monaco.languages.CompletionItemKind.Keyword,
+                  insertText: insertText,
+                  insertTextRules: insertTextRules,
+                  documentation: `Perl keyword`,
+                  detail: 'Keyword',
+                  sortText: '1' + keyword.toLowerCase(),
+                  range: {
+                    startLineNumber: position.lineNumber,
+                    startColumn: position.column - typedText.length,
+                    endLineNumber: position.lineNumber,
+                    endColumn: position.column
+                  }
+                });
+              }
+            });
+            
+            // Find all functions defined with 'sub'
+            const functionRegex = /sub\s+(\w+)/g;
+            let match;
+            while ((match = functionRegex.exec(fullText)) !== null) {
+              const functionName = match[1];
+              console.log('Found function:', functionName);
+              
+              // Only suggest if it matches what we're typing
+              if (functionName.toLowerCase().startsWith(typedText.toLowerCase())) {
+                suggestions.push({
+                  label: functionName,
+                  kind: monaco.languages.CompletionItemKind.Function,
+                  insertText: functionName + '(${1})',
+                  insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                  documentation: `Function defined with 'sub'`,
+                  detail: 'User-defined function',
+                  sortText: '2' + functionName.toLowerCase(),
+                  range: {
+                    startLineNumber: position.lineNumber,
+                    startColumn: position.column - typedText.length,
+                    endLineNumber: position.lineNumber,
+                    endColumn: position.column
+                  }
+                });
+              }
+            }
+            
+            console.log('Found function suggestions:', suggestions);
+          } else {
+            console.log('No function match found');
+          }
+          
+          return { suggestions: suggestions };
+        }
+      });
+
+      // Completion provider for Perl modules
+      monaco.languages.registerCompletionItemProvider('perl', {
+        triggerCharacters: ['u', 's', 'e', ' '],
+        provideCompletionItems: async function(model, position) {
+          const suggestions = [];
+          
+          // Get the text at current position to see what was typed
+          const currentLine = model.getLineContent(position.lineNumber);
+          const textBeforeCursor = currentLine.substring(0, position.column - 1);
+          
+          console.log('Module completion triggered. Text before cursor:', textBeforeCursor);
+          
+          // Check if we're typing 'use'
+          const useMatch = textBeforeCursor.match(/(use\s*)$/);
+          if (useMatch) {
+            console.log('Use statement detected');
+            
+            // Load modules from JSON and show first 5
+            const allModules = await loadModulesFromJSON();
+            const initialModules = allModules.slice(0, 5);
+            
+            initialModules.forEach(module => {
+              suggestions.push({
+                label: module,
+                kind: monaco.languages.CompletionItemKind.Module,
+                insertText: module + ';',
+                documentation: `Perl module: ${module}`,
+                range: {
+                  startLineNumber: position.lineNumber,
+                  startColumn: position.column - 3, // length of 'use'
+                  endLineNumber: position.lineNumber,
+                  endColumn: position.column
+                }
+              });
+            });
+            
+            console.log('Initial module suggestions:', suggestions);
+            return { suggestions: suggestions };
+          }
+          
+          // Check if we're typing after 'use' (e.g., 'use s', 'use st', etc.)
+          const useWithModuleMatch = textBeforeCursor.match(/use\s+([a-zA-Z][\w]*)$/);
+          if (useWithModuleMatch) {
+            const modulePrefix = useWithModuleMatch[1];
+            const firstLetter = modulePrefix[0].toLowerCase();
+            
+            console.log('Module prefix detected:', modulePrefix, 'First letter:', firstLetter);
+            
+            // Load all modules from JSON
+            const allModules = await loadModulesFromJSON();
+            
+            // Filter modules that match the current prefix
+            const matchingModules = allModules.filter(module => 
+              module.toLowerCase().startsWith(modulePrefix.toLowerCase())
+            );
+            
+            matchingModules.forEach(module => {
+              suggestions.push({
+                label: module,
+                kind: monaco.languages.CompletionItemKind.Module,
+                insertText: module + ';',
+                documentation: `Perl module: ${module}`,
+                range: {
+                  startLineNumber: position.lineNumber,
+                  startColumn: position.column - modulePrefix.length,
+                  endLineNumber: position.lineNumber,
+                  endColumn: position.column
+                }
+              });
+            });
+            
+            console.log('Filtered module suggestions:', suggestions);
+          }
+          
+          return { suggestions: suggestions };
+        }
+      });
+
+      // Completion provider for module functions (module-aware autocompletion)
+      monaco.languages.registerCompletionItemProvider('perl', {
+        triggerCharacters: ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+        provideCompletionItems: async function(model, position) {
+          const fullText = model.getValue();
+          const suggestions = [];
+          
+          // Get the text at current position to see what was typed
+          const currentLine = model.getLineContent(position.lineNumber);
+          const textBeforeCursor = currentLine.substring(0, position.column - 1);
+          
+          // Check if we're typing a function name (word starting with letter)
+          const functionMatch = textBeforeCursor.match(/([a-zA-Z][\w]*)$/);
+          if (functionMatch) {
+            const typedText = functionMatch[1];
+            
+            // Get imported modules from the code
+            const importedModules = getImportedModules(fullText);
+            
+            // Get module functions for each imported module
+            for (const module of importedModules) {
+              const moduleFunctions = await getModuleFunctions(module);
+              moduleFunctions.forEach(func => {
+                if (func.toLowerCase().includes(typedText.toLowerCase())) {
+                  // Prioritize exact matches and starts-with matches
+                  const isExactMatch = func.toLowerCase() === typedText.toLowerCase();
+                  const isStartsWith = func.toLowerCase().startsWith(typedText.toLowerCase());
+                  const sortText = isExactMatch ? '0' : isStartsWith ? '1' : '2' + func.toLowerCase();
+                  
+                  suggestions.push({
+                    label: func,
+                    kind: monaco.languages.CompletionItemKind.Function,
+                    insertText: func + '(${1})',
+                    insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: `Function from ${module}`,
+                    detail: `From ${module}`,
+                    sortText: sortText,
+                    range: {
+                      startLineNumber: position.lineNumber,
+                      startColumn: position.column - typedText.length,
+                      endLineNumber: position.lineNumber,
+                      endColumn: position.column
+                    }
+                  });
+                }
+              });
+            }
+          }
+          
+          return { suggestions: suggestions };
+        }
+      });
+      
+      // Update cursor position
+      editor.onDidChangeCursorPosition((e) => {
+        document.getElementById('cursorPosition').textContent = 
+          `Ln ${e.position.lineNumber}, Col ${e.position.column}`;
+      });
+      
+      // Update selection info
+      editor.onDidChangeCursorSelection((e) => {
+        const selection = editor.getSelection();
+        if (selection.isEmpty()) {
+          document.getElementById('selectionInfo').textContent = '';
+        } else {
+          const selectedText = editor.getModel().getValueInRange(selection);
+          const lines = selectedText.split('\n').length;
+          const chars = selectedText.length;
+          document.getElementById('selectionInfo').textContent = 
+            `(${lines} lines, ${chars} chars selected)`;
+        }
+      });
+      
+      // Track modifications and update error underline
+      let syntaxCheckTimeout = null;
+      editor.onDidChangeModelContent(() => {
+        setModified(true);
+        
+        // Clear existing timeout
+        if (syntaxCheckTimeout) {
+          clearTimeout(syntaxCheckTimeout);
+        }
+        
+        // Set new timeout for syntax checking (600ms delay)
+        syntaxCheckTimeout = setTimeout(() => {
+          const code = editor.getValue();
+          checkPerlSyntax(code);
+        }, 600);
+      });
+      
+              // Language selector event listener removed since only Perl is supported
+        
+        // Initialize error and warning counters
+        updateErrorWarningCounts(0, 0);
+      });
+    
+    // File management functions
+    function setModified(modified) {
+      isModified = modified;
+      const indicator = document.getElementById('modifiedIndicator');
+      indicator.style.display = modified ? 'inline' : 'none';
+    }
+    
+    function setFileName(name) {
+      document.getElementById('fileName').textContent = name;
+    }
+    
+    function newFile() {
+      editor.setValue('');
+      currentFilePath = null;
+      setFileName('Untitled');
+      setModified(false);
+      monaco.editor.setModelLanguage(editor.getModel(), 'perl');
+      document.getElementById('languageSelector').value = 'perl';
+    }
+    
+    function openFile(fileData) {
+      editor.setValue(fileData.content);
+      currentFilePath = fileData.path;
+      setFileName(fileData.name);
+      setModified(false);
+      
+      // Auto-detect language based on file extension
+      const ext = fileData.name.split('.').pop().toLowerCase();
+      const languageMap = {
+        'pl': 'perl',
+        'pm': 'perl',
+        'perl': 'perl'
+      };
+      const language = languageMap[ext] || 'perl';
+      monaco.editor.setModelLanguage(editor.getModel(), language);
+      document.getElementById('languageSelector').value = language;
+    }
+    
+    async function saveFile(saveAs = false) {
+      const content = editor.getValue();
+      const filePath = saveAs ? null : currentFilePath;
+      
+      const result = await window.electronAPI.saveFile({
+        path: filePath,
+        content: content
+      });
+      
+      if (result.success) {
+        currentFilePath = result.path;
+        setFileName(require('path').basename(result.path));
+        setModified(false);
+      }
+    }
+    
+    // IPC event listeners
+    window.electronAPI.onMenuNewFile(() => newFile());
+    window.electronAPI.onFileOpened((event, fileData) => openFile(fileData));
+    window.electronAPI.onMenuSaveFile(() => saveFile(false));
+    window.electronAPI.onMenuSaveAsFile(() => saveFile(true));
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if ((e.ctrlKey || e.metaKey)) {
+        switch(e.key) {
+          case 'n':
+            e.preventDefault();
+            newFile();
+            break;
+          case 's':
+            e.preventDefault();
+            if (e.shiftKey) {
+              saveFile(true);
+            } else {
+              saveFile(false);
+            }
+            break;
+        }
+      }
+    });
+
+    // Perl syntax checking functions
+    function checkPerlSyntax(code) {
+      // Show loading indicator
+      const statusBar = document.getElementById('statusBar');
+      if (statusBar) {
+        statusBar.textContent = 'Checking syntax...';
+        statusBar.style.color = '#007acc';
+      }
+      
+      // Call the backend to check Perl syntax
+      window.electronAPI.checkPerlSyntax(code).then(result => {
+        console.log('Perl syntax check result:', result);
+        
+        // Clear previous markers
+        const model = editor.getModel();
+        monaco.editor.setModelMarkers(model, 'perl', []);
+        
+        // Initialize counters
+        let errorCount = 0;
+        let warningCount = 0;
+        
+        if (result.success) {
+          // Check if there are warnings in the output
+          const hasWarnings = result.output.includes('Unquoted string') || 
+                             result.output.includes('Name "main::') ||
+                             result.output.includes('Use of uninitialized value') ||
+                             result.output.includes('Scalar value') ||
+                             result.output.includes('Possible precedence problem');
+          
+          if (hasWarnings) {
+            console.log('⚠️ Syntax OK but with warnings');
+            // Parse warnings from output
+            const warnings = parseWarningsFromOutput(result.output, code);
+            warningCount = warnings.length;
+            const markers = warnings.map(warning => ({
+              severity: monaco.MarkerSeverity.Warning,
+              message: warning.message,
+              startLineNumber: warning.line,
+              endLineNumber: warning.line,
+              startColumn: 1,
+              endColumn: 100
+            }));
+            monaco.editor.setModelMarkers(model, 'perl', markers);
+          } else {
+            console.log('✅ Syntax OK:', result.message);
+          }
+        } else {
+          console.log('❌ Perl syntax errors/warnings:');
+          const markers = [];
+          result.errors.forEach(error => {
+            console.log(`Line ${error.line}: ${error.message} (${error.severity})`);
+            if (error.near) {
+              console.log(`  Near: "${error.near}"`);
+            }
+            
+            // Count errors and warnings
+            if (error.severity === 'error') {
+              errorCount++;
+            } else if (error.severity === 'warning') {
+              warningCount++;
+            }
+            
+            // Create marker for this error
+            markers.push({
+              severity: error.severity === 'error' ? monaco.MarkerSeverity.Error : monaco.MarkerSeverity.Warning,
+              message: error.message,
+              startLineNumber: error.line,
+              endLineNumber: error.line,
+              startColumn: 1,
+              endColumn: 100
+            });
+          });
+          monaco.editor.setModelMarkers(model, 'perl', markers);
+        }
+        
+        // Update error and warning counters in status bar
+        updateErrorWarningCounts(errorCount, warningCount);
+        
+        // Clear loading indicator
+        if (statusBar) {
+          statusBar.textContent = '';
+        }
+      }).catch(err => {
+        console.error('Error checking Perl syntax:', err);
+        // Clear loading indicator on error too
+        if (statusBar) {
+          statusBar.textContent = '';
+        }
+      });
+    }
+    
+    // Parse warnings from Perl output
+    function parseWarningsFromOutput(output, code) {
+      const warnings = [];
+      const lines = output.split('\n');
+      
+      lines.forEach(line => {
+        // Match warning patterns
+        if (line.includes('Unquoted string') || 
+            line.includes('Name "main::') ||
+            line.includes('Use of uninitialized value') ||
+            line.includes('Scalar value') ||
+            line.includes('Possible precedence problem')) {
+          
+          // Try to extract line number from the warning
+          const lineMatch = line.match(/line (\d+)/);
+          if (lineMatch) {
+            const lineNum = parseInt(lineMatch[1]);
+            // The line number from Perl output is relative to the temp file
+            // which includes "use warnings;" at the top
+            // So we need to subtract 1 from the line number
+            const adjustedLine = lineNum - 1;
+            
+            warnings.push({
+              line: adjustedLine,
+              message: line.trim()
+            });
+            
+            console.log(`Warning at line ${adjustedLine}: ${line.trim()}`);
+          }
+        }
+      });
+      
+      return warnings;
+    }
+
+    // Function to reload modules from JSON
+    function reloadModulesFromJSON() {
+      console.log('Reloading modules from JSON...');
+      // Clear module cache to force reload from JSON
+      clearModuleCache();
+      console.log('Module cache cleared. New modules will be loaded on next completion.');
+    }
+
+    // Helper function to extract imported modules from code
+    function getImportedModules(code) {
+      const modules = [];
+      const lines = code.split('\n');
+      
+      lines.forEach(line => {
+        // Match 'use Module::Name;' or 'use Module::Name qw(...);'
+        const useMatch = line.match(/use\s+([A-Za-z][A-Za-z0-9_:]*)/);
+        if (useMatch) {
+          const moduleName = useMatch[1];
+          // Skip common modules that don't add functions
+          if (!['strict', 'warnings', 'vars', 'base', 'parent'].includes(moduleName)) {
+            modules.push(moduleName);
+          }
+        }
+      });
+      
+      console.log('Imported modules:', modules);
+      return modules;
+    }
+
+    // Helper function to get functions from specific modules
+    async function getModuleFunctions(moduleName) {
+      try {
+        const response = await fetch('modules.json');
+        const data = await response.json();
+        const moduleFunctions = data.moduleFunctions || {};
+        return moduleFunctions[moduleName] || [];
+      } catch (error) {
+        console.error('Error loading module functions from JSON:', error);
+        // Fallback to empty array if JSON loading fails
+        return [];
+      }
+    }
+
+    // Helper function to get built-in Perl functions
+    function getBuiltinFunctions() {
+      return [
+        // String functions
+        'length', 'substr', 'index', 'rindex', 'uc', 'lc', 'ucfirst', 'lcfirst',
+        'chomp', 'chop', 'reverse', 'split', 'join', 'sprintf', 'printf',
+        'ord', 'chr', 'hex', 'oct', 'binmode', 'crypt', 'quotemeta',
+        
+        // Array functions
+        'push', 'pop', 'shift', 'unshift', 'splice', 'sort', 'reverse',
+        'grep', 'map', 'each', 'keys', 'values', 'exists', 'delete',
+        
+        // Hash functions
+        'keys', 'values', 'each', 'exists', 'delete', 'defined',
+        
+        // File and I/O functions
+        'open', 'close', 'read', 'write', 'seek', 'tell', 'truncate',
+        'rename', 'unlink', 'mkdir', 'rmdir', 'chdir', 'chmod', 'chown',
+        'stat', 'lstat', 'link', 'symlink', 'readlink', 'glob',
+        'opendir', 'readdir', 'closedir', 'rewinddir', 'telldir', 'seekdir',
+        
+        // Process and system functions
+        'system', 'exec', 'fork', 'wait', 'waitpid', 'kill', 'alarm',
+        'sleep', 'time', 'times', 'getpgrp', 'setpgrp', 'getppid',
+        'getpriority', 'setpriority', 'getpwnam', 'getpwuid', 'getgrnam', 'getgrgid',
+        
+        // Math functions
+        'abs', 'atan2', 'cos', 'exp', 'hex', 'int', 'log', 'oct', 'rand',
+        'sin', 'sqrt', 'srand', 'atan', 'sinh', 'cosh', 'tanh',
+        
+        // Regular expression functions
+        'm', 's', 'tr', 'y', 'qr', 'split', 'join', 'grep', 'map',
+        
+        // Variable and scope functions
+        'my', 'our', 'local', 'defined', 'undef', 'ref', 'bless',
+        'tie', 'untie', 'tied', 'scalar', 'wantarray', 'caller',
+        
+        // Object-oriented functions
+        'bless', 'ref', 'isa', 'can', 'VERSION', 'import', 'unimport',
+        
+        // Error handling functions
+        'die', 'warn', 'croak', 'confess', 'cluck', 'carp',
+        
+        // Other utility functions
+        'eval', 'do', 'require', 'use', 'no', 'package', 'sub',
+        'goto', 'last', 'next', 'redo', 'return', 'exit',
+        'print', 'say', 'printf', 'sprintf', 'format', 'write',
+        'select', 'eof', 'fileno', 'getc', 'readline', 'readpipe',
+        'pipe', 'socketpair', 'shmget', 'shmread', 'shmwrite', 'shmctl',
+        'msgget', 'msgrcv', 'msgsnd', 'msgctl', 'semget', 'semop', 'semctl',
+        'flock', 'fcntl', 'ioctl', 'syscall', 'sysopen', 'sysread', 'syswrite',
+        'sysseek', 'sysclose', 'sysread', 'syswrite', 'sysseek', 'sysclose',
+        'getpeername', 'getsockname', 'getsockopt', 'setsockopt', 'socket',
+        'socketpair', 'bind', 'listen', 'accept', 'connect', 'shutdown',
+        'recv', 'send', 'recvfrom', 'sendto', 'gethostbyname', 'gethostbyaddr',
+        'getnetbyname', 'getnetbyaddr', 'getservbyname', 'getservbyport',
+        'gethostent', 'getnetent', 'getservent', 'sethostent', 'setnetent',
+        'setservent', 'endhostent', 'endnetent', 'endservent', 'getprotoent',
+        'getprotobyname', 'getprotobynumber', 'setprotoent', 'endprotoent',
+        'getpwent', 'setpwent', 'endpwent', 'getgrent', 'setgrent', 'endgrent'
+      ];
+    }
+
+    // Helper function to get Perl keywords
+    function getPerlKeywords() {
+      return [
+        // Control flow keywords
+        'if', 'elsif', 'else', 'unless', 'while', 'until', 'for', 'foreach',
+        'do', 'given', 'when', 'default', 'continue', 'last', 'next', 'redo',
+        'goto', 'return', 'exit', 'die', 'warn',
+        
+        // Variable declaration keywords
+        'my', 'our', 'local', 'state', 'package', 'sub', 'use', 'no',
+        'require', 'import', 'unimport',
+        
+        // Object-oriented keywords
+        'bless', 'ref', 'isa', 'can', 'VERSION', 'SUPER', 'parent', 'base',
+        
+        // File and I/O keywords
+        'open', 'close', 'read', 'write', 'seek', 'tell', 'truncate',
+        'rename', 'unlink', 'mkdir', 'rmdir', 'chdir', 'chmod', 'chown',
+        'stat', 'lstat', 'link', 'symlink', 'readlink', 'glob',
+        'opendir', 'readdir', 'closedir', 'rewinddir', 'telldir', 'seekdir',
+        
+        // Process and system keywords
+        'system', 'exec', 'fork', 'wait', 'waitpid', 'kill', 'alarm',
+        'sleep', 'time', 'times', 'getpgrp', 'setpgrp', 'getppid',
+        'getpriority', 'setpriority',
+        
+        // Regular expression keywords
+        'm', 's', 'tr', 'y', 'qr', 'split', 'join', 'grep', 'map',
+        
+        // Other keywords
+        'defined', 'undef', 'scalar', 'wantarray', 'caller', 'eval',
+        'do', 'format', 'select', 'eof', 'fileno', 'getc', 'readline',
+        'readpipe', 'pipe', 'socketpair', 'flock', 'fcntl', 'ioctl',
+        'syscall', 'sysopen', 'sysread', 'syswrite', 'sysseek', 'sysclose',
+        'getpeername', 'getsockname', 'getsockopt', 'setsockopt', 'socket',
+        'bind', 'listen', 'accept', 'connect', 'shutdown', 'recv', 'send',
+        'recvfrom', 'sendto', 'gethostbyname', 'gethostbyaddr', 'getnetbyname',
+        'getnetbyaddr', 'getservbyname', 'getservbyport', 'gethostent',
+        'getnetent', 'getservent', 'sethostent', 'setnetent', 'setservent',
+        'endhostent', 'endnetent', 'endservent', 'getprotoent', 'getprotobyname',
+        'getprotobynumber', 'setprotoent', 'endprotoent', 'getpwent', 'setpwent',
+        'endpwent', 'getgrent', 'setgrent', 'endgrent'
+      ];
+    }
+
+    // Function to update error and warning counts in status bar
+    function updateErrorWarningCounts(errorCount, warningCount) {
+      const errorElement = document.getElementById('errorCount');
+      const warningElement = document.getElementById('warningCount');
+      
+      if (errorElement) {
+        const errorSpan = errorElement.querySelector('span');
+        if (errorSpan) {
+          errorSpan.textContent = errorCount;
+        }
+      }
+      
+      if (warningElement) {
+        const warningSpan = warningElement.querySelector('span');
+        if (warningSpan) {
+          warningSpan.textContent = warningCount;
+        }
+      }
+    }
+  </script>
+</body>
+</html>

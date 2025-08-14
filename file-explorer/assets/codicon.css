@@ -1,0 +1,55 @@
+.codicon {
+    display: inline-block;
+    line-height: 1;
+    text-align: center;
+    text-rendering: auto;
+    text-transform: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* File and folder icons using Unicode characters */
+/* .codicon-folder::before { content: "📁"; } */
+.codicon-folder::before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-image: url('icons/folder.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    vertical-align: middle;
+}
+
+.codicon-folder-opened::before { content: "📂"; }
+.codicon-file::before { content: "📄"; }
+.codicon-file-code::before { content: "📝"; }
+.codicon-file-media::before { content: "🎬"; }
+.codicon-file-zip::before { content: "📦"; }
+.codicon-file-pdf::before { content: "📕"; }
+.codicon-settings-gear::before { content: "⚙️"; }
+
+/* Action icons */
+.codicon-new-file::before { content: "📄"; }
+/* .codicon-new-folder::before { content: "📁"; } */
+.codicon-new-folder::before {
+    content: "";
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    background-image: url('icons/folder.svg');
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    vertical-align: middle;
+}
+.codicon-refresh::before { content: "🔄"; }
+.codicon-edit::before { content: "✏️"; }
+.codicon-trash::before { content: "🗑️"; }
+.codicon-copy::before { content: "📋"; }
+.codicon-cut::before { content: "✂️"; }
+.codicon-paste::before { content: "📋"; }
+.codicon-chevron-right::before { content: "▶"; }
+.codicon-chevron-down::before { content: "▼"; }
+.codicon-close::before { content: "✕"; }

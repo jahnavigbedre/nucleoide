@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; style-src 'self' 'unsafe-inline'; script-src 'self'">
+    <title>File Explorer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- File Explorer Sidebar -->
+        <div class="file-explorer">
+            <div class="explorer-header">
+                <span class="explorer-title">EXPLORER</span>
+                <div class="explorer-actions">
+                    <button class="action-button" id="new-file-btn" title="New File">
+                        <i class="codicon codicon-new-file"></i>
+                    </button>
+                    <button class="action-button" id="new-folder-btn" title="New Folder">
+                        <i class="codicon codicon-new-folder"></i>
+                    </button>
+                    <button class="action-button" id="refresh-btn" title="Refresh">
+                        <i class="codicon codicon-refresh"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="explorer-content">
+                <div class="file-tree" id="file-tree">
+                    <!-- File tree will be populated here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Area -->
+        <div class="main-content">
+            <div class="content-header">
+                <span class="current-path" id="current-path">Loading...</span>
+            </div>
+            <div class="content-area">
+                <div class="welcome-content">
+                    <h1>File Explorer</h1>
+                    <p>Select a file from the explorer to view its details here.</p>
+                    <div class="file-info" id="file-info">
+                        <p>No file selected</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Context Menu -->
+    <div class="context-menu" id="context-menu">
+        <div class="context-menu-item" data-action="new-file">
+            <i class="codicon codicon-new-file"></i>
+            <span>New File</span>
+        </div>
+        <div class="context-menu-item" data-action="new-folder">
+            <i class="codicon codicon-new-folder"></i>
+            <span>New Folder</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="paste" id="paste-menu-item">
+            <i class="codicon codicon-paste"></i>
+            <span>Paste</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="rename">
+            <i class="codicon codicon-edit"></i>
+            <span>Rename</span>
+        </div>
+        <div class="context-menu-item" data-action="delete">
+            <i class="codicon codicon-trash"></i>
+            <span>Delete</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" data-action="copy">
+            <i class="codicon codicon-copy"></i>
+            <span>Copy</span>
+        </div>
+        <div class="context-menu-item" data-action="cut">
+            <i class="codicon codicon-cut"></i>
+            <span>Cut</span>
+        </div>
+    </div>
+
+    <!-- Custom Input Dialog -->
+    <div class="input-dialog-overlay" id="input-dialog-overlay">
+        <div class="input-dialog">
+            <div class="input-dialog-header">
+                <span id="input-dialog-title">Enter Name</span>
+            </div>
+            <div class="input-dialog-content">
+                <input type="text" id="input-dialog-input" class="input-dialog-input" placeholder="Enter name..." />
+            </div>
+            <div class="input-dialog-actions">
+                <button class="input-dialog-btn" id="input-dialog-cancel">Cancel</button>
+                <button class="input-dialog-btn primary" id="input-dialog-ok">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+
+</html>
